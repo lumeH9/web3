@@ -1,1 +1,1 @@
-web: node web3-master/index.js
+web: node index.js

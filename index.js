@@ -12,6 +12,7 @@ const logger = (request, response, next) => {
   console.log('---')
   next()
 }
+app.use(express.static('build'))
 
 app.use(logger)
 app.use(bodyParser.json())

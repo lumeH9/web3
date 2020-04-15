@@ -19,7 +19,7 @@ class App extends React.Component {
   componentDidMount() {
     console.log('did mount')
     axios
-      .get('http://localhost:3001/notes')
+      .get('http://localhost:3001/api/persons')
       .then(response => {
         console.log('promise fulfilled')
         this.setState({ persons: response.data })

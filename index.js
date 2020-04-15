@@ -1,34 +1,10 @@
 
 
-let notes = [
-  {
-    id: 1,
-    content: 'HTML on helppoa',
-    date: '2017-12-10T17:30:31.098Z',
-    important: true
-  },
-  {
-    id: 2,
-    content: 'Selain pystyy suorittamaan vain javascriptiä',
-    date: '2017-12-10T18:39:34.091Z',
-    important: false
-  },
-  {
-    id: 3,
-    content: 'HTTP-protokollan tärkeimmät metodit ovat GET ja POST',
-    date: '2017-12-10T19:20:14.298Z',
-    important: true
-  }
-]
-
-
-
 
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
 const cors = require('cors')
-
 const logger = (request, response, next) => {
   console.log('Method:',request.method)
   console.log('Path:  ', request.path)
@@ -38,63 +14,81 @@ const logger = (request, response, next) => {
 }
 
 app.use(logger)
+app.use(bodyParser.json())
 app.use(cors())
 
+let persons = [
+  {
+    "name": "Arto Hellas",
+    "number": "040-123456",
+    "id": 1
+  },
+  {
+    "name": "Martti Tienari",
+    "number": "040-123456",
+    "id": 2
+  },
+  {
+    "name": "Arto Järvinen",
+    "number": "040-123456",
+    "id": 3
+  },
+  {
+    "name": "Lea Kutvonen",
+    "number": "040-123456",
+    "id": 4
+  }
+]
 
-app.use(bodyParser.json())
-
-app.get('/', (req, res) => {
-  res.send('<h1>Hello World!</h1>')
+app.get('/api/persons', (req, res) => {
+  res.json(persons)
 })
-
-app.get('/notes', (req, res) => {
-  res.json(notes)
-})
-
-app.get('/notes/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response) => {
   const id = Number(request.params.id)
-  const note = notes.find(note => note.id === id)
-  if ( note ) {
+  const note = persons.find(note => note.id === id)
+  if (note) {
     response.json(note)
   } else {
     response.status(404).end()
+
   }
 })
-app.delete('/notes/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response) => {
   const id = Number(request.params.id)
-  notes = notes.filter(note => note.id !== id)
+  persons = persons.filter(note => note.id !== id)
 
   response.status(204).end()
 })
-/*
-app.post('/notes', (request, response) => {
-  const note = request.body
-  console.log(note)
+const generateId = (min, max) => {
 
-  response.json(note)
-})*/
-
-const generateId = () => {
-  const maxId = notes.length > 0 ? notes.map(n => n.id).sort((a,b) => a - b).reverse()[0] : 1
-  return maxId + 1
+  return getRandomInt(5, 1000000)
+}
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min;
 }
 
-app.post('/notes', (request, response) => {
+app.post('/api/persons', (request, response) => {
   const body = request.body
+  const name = body.name
 
-  if (body.content === undefined) {
-    return response.status(400).json({error: 'content missing'})
+  if (name === undefined) {
+    return response.json({ error: 'name missing' })
   }
-
+  if (body.number === undefined) {
+    return response.json({ error: 'number missing' })
+  }
+  const person = persons.find(person => person.name === name)
+  console.log(person)
+  if (person) {
+    return response.json({ error: 'name must be unique' })
+  }
   const note = {
-    content: body.content,
-    important: body.important|| false,
-    date: new Date(),
+    name: body.name,
     id: generateId()
   }
-
-  notes = notes.concat(note)
-
+  persons = persons.concat(note)
   response.json(note)
 })
 
@@ -104,11 +98,6 @@ const error = (request, response) => {
 
 app.use(error)
 
-
-/*const PORT = 3001
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})*/
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {

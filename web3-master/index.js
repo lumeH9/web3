@@ -37,15 +37,17 @@ const logger = (request, response, next) => {
   next()
 }
 
+app.use(express.static('build'))
+
 app.use(logger)
 app.use(cors())
 
-app.use(express.static('build'))
+
 
 app.use(bodyParser.json())
 
 app.get('/', (req, res) => {
-  res.send('<h1>Hello World!</h1>')
+  res.send('<h1>Helloo World!</h1>')
 })
 
 app.get('/notes', (req, res) => {

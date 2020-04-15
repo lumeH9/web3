@@ -1,0 +1,118 @@
+const express = require('express')
+const Person = require('./models/person')
+const app = express()
+const bodyParser = require('body-parser')
+const cors = require('cors')
+
+app.use(bodyParser.json())
+app.use(cors())
+
+let persons = [
+  {
+    "name": "Arto Hellas",
+    "number": "040-123456",
+    "id": 1
+  },
+  {
+    "name": "Martti Tienari",
+    "number": "040-123456",
+    "id": 2
+  },
+  {
+    "name": "Arto Järvinen",
+    "number": "040-123456",
+    "id": 3
+  },
+  {
+    "name": "Lea Kutvonen",
+    "number": "040-123456",
+    "id": 4
+  }
+]
+const formatNote = (person) => {
+  return {
+    name: person.content,
+    number: person.number,
+  }
+}
+/*app.get('/api/persons', (req, res) => {
+  res.json(persons)
+})*/
+app.get('/api/persons', (request, response) => {
+  Person
+    .find({}, {__v: 0})
+    .then(persons => {
+      response.json(persons.map(formatNote))
+    })
+})
+app.get('/api/persons/:id', (request, response) => {
+  const id = Number(request.params.id)
+  const note = persons.find(note => note.id === id)
+  if (note) {
+    response.json(note)
+  } else {
+    response.status(404).end()
+
+  }
+})
+app.delete('/api/persons/:id', (request, response) => {
+  const id = Number(request.params.id)
+  persons = persons.filter(note => note.id !== id)
+
+  response.status(204).end()
+})
+const generateId = (min, max) => {
+
+  return getRandomInt(5, 1000000)
+}
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+// aikaisempien tehtävien mukaan tehty toteutus alla, myös ylhääl:
+/*
+app.post('/api/persons', (request, response) => {
+  const body = request.body
+  const name = body.name
+
+  if (name === undefined) {
+    return response.json({ error: 'name missing' })
+  }
+  if (body.number === undefined) {
+    return response.json({ error: 'number missing' })
+  }
+  const person = persons.find(person => person.name === name)
+  console.log(person)
+  if (person) {
+    return response.json({ error: 'name must be unique' })
+  }
+  const note = {
+    name: body.name,
+    id: generateId()
+  }
+  persons = persons.concat(note)
+  response.json(note)
+})*/
+app.post('/api/persons', (request, response) => {
+  const body = request.body
+
+  if (body.content === undefined) {
+    return response.status(400).json({error: 'content missing'})
+  }
+
+  const person = new Person({
+    name: body.name,
+    number: body.number
+  })
+
+  person
+    .save()
+    .then(savedNote => {
+      response.json(formatNote(savedNote))
+    })
+})
+const PORT = 3001
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
